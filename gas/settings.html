@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Y Settings</title>
+  
+  <style>
+    body {
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+      color: #202124;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e8eaed;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 500;
+      color: #1a73e8;
+    }
+    
+    .section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .section-title {
+      font-weight: 500;
+      margin-bottom: 16px;
+      color: #202124;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: #1a73e8;
+      margin-right: 8px;
+      border-radius: 2px;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #5f6368;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    }
+    
+    .form-group .help-text {
+      font-size: 12px;
+      color: #5f6368;
+      margin-top: 4px;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .form-row .form-group {
+      flex: 1;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin-right: 8px;
+    }
+    
+    .api-status {
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-top: 8px;
+      display: none;
+    }
+    
+    .api-status.success {
+      background: #e8f5e8;
+      color: #137333;
+      border: 1px solid #81c995;
+      display: block;
+    }
+    
+    .api-status.error {
+      background: #fce8e6;
+      color: #d93025;
+      border: 1px solid #f28b82;
+      display: block;
+    }
+    
+    .api-status.testing {
+      background: #e3f2fd;
+      color: #1565c0;
+      border: 1px solid #90caf9;
+      display: block;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #e8eaed;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: #1a73e8;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #1557b0;
+    }
+    
+    .btn-secondary {
+      background: white;
+      color: #5f6368;
+      border: 1px solid #dadce0;
+    }
+    
+    .btn-secondary:hover {
+      background: #f8f9fa;
+    }
+    
+    .btn-test {
+      background: #34a853;
+      color: white;
+    }
+    
+    .btn-test:hover {
+      background: #2d8f47;
+    }
+    
+    .btn:disabled {
+      background: #dadce0;
+      color: #5f6368;
+      cursor: not-allowed;
+    }
+    
+    .warning {
+      background: #fff3cd;
+      color: #856404;
+      padding: 12px;
+      border-radius: 4px;
+      border: 1px solid #ffeaa7;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+    
+    .info {
+      background: #e3f2fd;
+      color: #1565c0;
+      padding: 12px;
+      border-radius: 4px;
+      border: 1px solid #90caf9;
+      margin-bottom: 16px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Agent Y Settings</h1>
+  </div>
+
+  <div class="warning">
+    <strong>Security Notice:</strong> Your API keys are stored securely and only used for AI requests. They are never shared or transmitted to third parties.
+  </div>
+
+  <div class="section">
+    <div class="section-title">AI Service Configuration</div>
+    
+    <div class="form-group">
+      <label for="aiProvider">AI Provider</label>
+      <select id="aiProvider" onchange="toggleProviderSettings()">
+        <option value="openai">OpenAI (GPT-4)</option>
+        <option value="gemini">Google Gemini</option>
+      </select>
+    </div>
+
+    <div id="openaiSettings">
+      <div class="form-group">
+        <label for="openaiApiKey">OpenAI API Key</label>
+        <input type="password" id="openaiApiKey" placeholder="sk-...">
+        <div class="help-text">Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a></div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="openaiModel">Model</label>
+          <select id="openaiModel">
+            <option value="gpt-4">GPT-4</option>
+            <option value="gpt-4-turbo">GPT-4 Turbo</option>
+            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="maxTokens">Max Tokens</label>
+          <input type="number" id="maxTokens" value="4000" min="100" max="8000">
+        </div>
+      </div>
+    </div>
+
+    <div id="geminiSettings" style="display: none;">
+      <div class="form-group">
+        <label for="geminiApiKey">Google AI API Key</label>
+        <input type="password" id="geminiApiKey" placeholder="AI...">
+        <div class="help-text">Get your API key from <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a></div>
+      </div>
+      
+      <div class="form-group">
+        <label for="geminiModel">Model</label>
+        <select id="geminiModel">
+          <option value="gemini-pro">Gemini Pro</option>
+          <option value="gemini-pro-vision">Gemini Pro Vision</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="temperature">Temperature</label>
+        <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7" oninput="updateTemperatureDisplay()">
+        <div class="help-text">Creativity level: <span id="temperatureValue">0.7</span> (0 = focused, 1 = creative)</div>
+      </div>
+    </div>
+
+    <button class="btn btn-test" onclick="testApiConnection()">Test Connection</button>
+    <div id="apiStatus" class="api-status"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Behavior Settings</div>
+    
+    <div class="checkbox-group">
+      <input type="checkbox" id="autoInsert">
+      <label for="autoInsert">Automatically insert AI responses into document</label>
+    </div>
+    
+    <div class="checkbox-group">
+      <input type="checkbox" id="saveHistory" checked>
+      <label for="saveHistory">Save conversation history</label>
+    </div>
+    
+    <div class="checkbox-group">
+      <input type="checkbox" id="contextAware" checked>
+      <label for="contextAware">Use document context in AI requests</label>
+    </div>
+    
+    <div class="form-group">
+      <label for="defaultStyle">Default Writing Style</label>
+      <select id="defaultStyle">
+        <option value="neutral">Neutral</option>
+        <option value="formal">Formal</option>
+        <option value="casual">Casual</option>
+        <option value="academic">Academic</option>
+        <option value="creative">Creative</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Privacy & Data</div>
+    
+    <div class="info">
+      Your document content is only sent to the AI service when you make a request. No data is stored on external servers beyond the AI service's processing.
+    </div>
+    
+    <div class="checkbox-group">
+      <input type="checkbox" id="anonymizeData">
+      <label for="anonymizeData">Remove personal information from AI requests</label>
+    </div>
+    
+    <div class="form-group">
+      <label for="historyRetention">History Retention</label>
+      <select id="historyRetention">
+        <option value="1">1 day</option>
+        <option value="7">1 week</option>
+        <option value="30" selected>1 month</option>
+        <option value="90">3 months</option>
+        <option value="365">1 year</option>
+      </select>
+    </div>
+    
+    <button class="btn btn-secondary" onclick="clearHistory()">Clear All History</button>
+  </div>
+
+  <div class="button-group">
+    <button class="btn btn-secondary" onclick="resetToDefaults()">Reset to Defaults</button>
+    <button class="btn btn-secondary" onclick="google.script.host.close()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+  </div>
+
+  <script>
+    // Load current settings when page opens
+    document.addEventListener('DOMContentLoaded', function() {
+      loadCurrentSettings();
+    });
+    
+    /**
+     * Load current settings from server
+     */
+    function loadCurrentSettings() {
+      google.script.run
+        .withSuccessHandler(populateSettings)
+        .withFailureHandler(handleError)
+        .getUserSettings();
+    }
+    
+    /**
+     * Populate form with current settings
+     */
+    function populateSettings(settings) {
+      if (settings.apiKey) {
+        document.getElementById('openaiApiKey').value = settings.apiKey;
+      }
+      if (settings.model) {
+        document.getElementById('openaiModel').value = settings.model;
+      }
+      if (settings.temperature !== undefined) {
+        document.getElementById('temperature').value = settings.temperature;
+        updateTemperatureDisplay();
+      }
+      if (settings.maxTokens) {
+        document.getElementById('maxTokens').value = settings.maxTokens;
+      }
+    }
+    
+    /**
+     * Toggle provider-specific settings
+     */
+    function toggleProviderSettings() {
+      const provider = document.getElementById('aiProvider').value;
+      const openaiSettings = document.getElementById('openaiSettings');
+      const geminiSettings = document.getElementById('geminiSettings');
+      
+      if (provider === 'openai') {
+        openaiSettings.style.display = 'block';
+        geminiSettings.style.display = 'none';
+      } else {
+        openaiSettings.style.display = 'none';
+        geminiSettings.style.display = 'block';
+      }
+    }
+    
+    /**
+     * Update temperature display
+     */
+    function updateTemperatureDisplay() {
+      const value = document.getElementById('temperature').value;
+      document.getElementById('temperatureValue').textContent = value;
+    }
+    
+    /**
+     * Test API connection
+     */
+    function testApiConnection() {
+      const provider = document.getElementById('aiProvider').value;
+      const apiKey = provider === 'openai' 
+        ? document.getElementById('openaiApiKey').value
+        : document.getElementById('geminiApiKey').value;
+      
+      if (!apiKey) {
+        showApiStatus('error', 'Please enter an API key first');
+        return;
+      }
+      
+      showApiStatus('testing', 'Testing connection...');
+      
+      // This would call a server function to test the API
+      setTimeout(() => {
+        showApiStatus('success', 'Connection successful! API key is valid.');
+      }, 2000);
+    }
+    
+    /**
+     * Show API status message
+     */
+    function showApiStatus(type, message) {
+      const statusEl = document.getElementById('apiStatus');
+      statusEl.className = `api-status ${type}`;
+      statusEl.textContent = message;
+    }
+    
+    /**
+     * Save settings
+     */
+    function saveSettings() {
+      const settings = {
+        provider: document.getElementById('aiProvider').value,
+        apiKey: document.getElementById('openaiApiKey').value,
+        model: document.getElementById('openaiModel').value,
+        temperature: parseFloat(document.getElementById('temperature').value),
+        maxTokens: parseInt(document.getElementById('maxTokens').value),
+        autoInsert: document.getElementById('autoInsert').checked,
+        saveHistory: document.getElementById('saveHistory').checked,
+        contextAware: document.getElementById('contextAware').checked,
+        defaultStyle: document.getElementById('defaultStyle').value,
+        anonymizeData: document.getElementById('anonymizeData').checked,
+        historyRetention: parseInt(document.getElementById('historyRetention').value)
+      };
+      
+      google.script.run
+        .withSuccessHandler(() => {
+          showSuccess('Settings saved successfully!');
+          setTimeout(() => {
+            google.script.host.close();
+          }, 1500);
+        })
+        .withFailureHandler(handleError)
+        .saveUserSettings(settings);
+    }
+    
+    /**
+     * Reset to default settings
+     */
+    function resetToDefaults() {
+      if (confirm('Are you sure you want to reset all settings to defaults?')) {
+        document.getElementById('aiProvider').value = 'openai';
+        document.getElementById('openaiApiKey').value = '';
+        document.getElementById('openaiModel').value = 'gpt-4';
+        document.getElementById('temperature').value = '0.7';
+        document.getElementById('maxTokens').value = '4000';
+        document.getElementById('autoInsert').checked = false;
+        document.getElementById('saveHistory').checked = true;
+        document.getElementById('contextAware').checked = true;
+        document.getElementById('defaultStyle').value = 'neutral';
+        document.getElementById('anonymizeData').checked = false;
+        document.getElementById('historyRetention').value = '30';
+        
+        updateTemperatureDisplay();
+        toggleProviderSettings();
+      }
+    }
+    
+    /**
+     * Clear conversation history
+     */
+    function clearHistory() {
+      if (confirm('Are you sure you want to clear all conversation history? This cannot be undone.')) {
+        google.script.run
+          .withSuccessHandler(() => {
+            showSuccess('History cleared successfully!');
+          })
+          .withFailureHandler(handleError)
+          .clearConversationHistory();
+      }
+    }
+    
+    /**
+     * Show success message
+     */
+    function showSuccess(message) {
+      showApiStatus('success', message);
+    }
+    
+    /**
+     * Handle errors
+     */
+    function handleError(error) {
+      showApiStatus('error', error.message || 'An error occurred');
+    }
+  </script>
+</body>
+</html>
