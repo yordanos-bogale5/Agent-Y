@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Y Help</title>
+  
+  <style>
+    body {
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+      color: #202124;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e8eaed;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 500;
+      color: #1a73e8;
+    }
+    
+    .section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .section h2 {
+      margin-top: 0;
+      color: #1a73e8;
+      font-size: 18px;
+      font-weight: 500;
+    }
+    
+    .section h3 {
+      color: #5f6368;
+      font-size: 16px;
+      font-weight: 500;
+      margin-top: 20px;
+    }
+    
+    .feature-list {
+      list-style: none;
+      padding: 0;
+    }
+    
+    .feature-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f3f4;
+    }
+    
+    .feature-list li:last-child {
+      border-bottom: none;
+    }
+    
+    .feature-title {
+      font-weight: 500;
+      color: #202124;
+    }
+    
+    .feature-desc {
+      color: #5f6368;
+      font-size: 13px;
+      margin-top: 2px;
+    }
+    
+    .example {
+      background: #f8f9fa;
+      border-left: 4px solid #1a73e8;
+      padding: 12px;
+      margin: 12px 0;
+      font-style: italic;
+    }
+    
+    .tip {
+      background: #e8f5e8;
+      border: 1px solid #81c995;
+      border-radius: 4px;
+      padding: 12px;
+      margin: 12px 0;
+    }
+    
+    .tip-title {
+      font-weight: 500;
+      color: #137333;
+      margin-bottom: 4px;
+    }
+    
+    .close-btn {
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 10px 20px;
+      font-size: 14px;
+      cursor: pointer;
+      margin: 20px auto;
+      display: block;
+    }
+    
+    .close-btn:hover {
+      background: #1557b0;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📚 Agent Y Help Guide</h1>
+  </div>
+
+  <div class="section">
+    <h2>🚀 Getting Started</h2>
+    <p>Agent Y is your intelligent AI assistant for Google Docs. It helps you write, edit, and understand your documents using advanced AI technology.</p>
+    
+    <h3>First Steps:</h3>
+    <ol>
+      <li>Configure your OpenAI API key in Settings</li>
+      <li>Select text in your document or position your cursor</li>
+      <li>Choose a quick action or enter a custom request</li>
+      <li>Review and insert the AI-generated response</li>
+    </ol>
+  </div>
+
+  <div class="section">
+    <h2>⚡ Quick Actions</h2>
+    <ul class="feature-list">
+      <li>
+        <div class="feature-title">📝 Summarize</div>
+        <div class="feature-desc">Create concise summaries of selected text or entire documents</div>
+      </li>
+      <li>
+        <div class="feature-title">✨ Improve</div>
+        <div class="feature-desc">Enhance writing quality, grammar, and clarity</div>
+      </li>
+      <li>
+        <div class="feature-title">💡 Explain</div>
+        <div class="feature-desc">Get clear explanations of complex concepts or text</div>
+      </li>
+      <li>
+        <div class="feature-title">🎯 Generate</div>
+        <div class="feature-desc">Create new content based on your requirements</div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>💬 Custom Requests</h2>
+    <p>Use natural language to request specific help:</p>
+    
+    <div class="example">
+      "Make this paragraph more formal"
+    </div>
+    <div class="example">
+      "Translate this to Spanish"
+    </div>
+    <div class="example">
+      "Add examples to explain this concept"
+    </div>
+    <div class="example">
+      "Create a bullet-point list from this text"
+    </div>
+    
+    <div class="tip">
+      <div class="tip-title">💡 Pro Tip:</div>
+      Be specific in your requests for better results. Include context about your audience, tone, or purpose.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>⚙️ Settings & Configuration</h2>
+    <h3>API Configuration:</h3>
+    <ul>
+      <li><strong>API Key:</strong> Required for AI functionality. Get yours from OpenAI Platform.</li>
+      <li><strong>Model:</strong> Choose between GPT-4 (best quality) or GPT-3.5 (faster, cheaper).</li>
+    </ul>
+    
+    <h3>Performance Settings:</h3>
+    <ul>
+      <li><strong>Max Tokens:</strong> Controls response length (higher = longer responses).</li>
+      <li><strong>Temperature:</strong> Controls creativity (0 = focused, 1 = creative).</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>🔒 Privacy & Security</h2>
+    <ul>
+      <li>Your API key is stored securely in your Google account</li>
+      <li>Document content is only sent to OpenAI when you make requests</li>
+      <li>No data is stored on external servers</li>
+      <li>You can disable conversation history in Settings</li>
+    </ul>
+  </div>
+
+  <div class="section">
+    <h2>❓ Troubleshooting</h2>
+    <h3>Common Issues:</h3>
+    <ul>
+      <li><strong>"API key required":</strong> Configure your OpenAI API key in Settings</li>
+      <li><strong>"Request failed":</strong> Check your internet connection and API key</li>
+      <li><strong>"No text selected":</strong> Select text or position cursor in document</li>
+      <li><strong>Slow responses:</strong> Try using GPT-3.5 or reducing max tokens</li>
+    </ul>
+    
+    <div class="tip">
+      <div class="tip-title">🔧 Need Help?</div>
+      Use the "Test Connection" button in Settings to verify your API configuration.
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>📈 Tips for Best Results</h2>
+    <ul>
+      <li>Select specific text for targeted improvements</li>
+      <li>Use clear, specific language in custom requests</li>
+      <li>Experiment with different temperature settings</li>
+      <li>Review AI responses before inserting into your document</li>
+      <li>Use conversation history for follow-up requests</li>
+    </ul>
+  </div>
+
+  <button class="close-btn" onclick="closeHelp()">Close Help</button>
+
+  <script>
+    function closeHelp() {
+      google.script.host.close();
+    }
+  </script>
+</body>
+</html>

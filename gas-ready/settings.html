@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent Y Settings</title>
+  
+  <style>
+    body {
+      font-family: 'Google Sans', Roboto, Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f8f9fa;
+      color: #202124;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e8eaed;
+    }
+    
+    .header h1 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 500;
+      color: #1a73e8;
+    }
+    
+    .section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .section-title {
+      font-weight: 500;
+      margin-bottom: 16px;
+      color: #202124;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 16px;
+      background: #1a73e8;
+      margin-right: 8px;
+      border-radius: 2px;
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      color: #5f6368;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #dadce0;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+    }
+    
+    .form-group .help-text {
+      font-size: 12px;
+      color: #5f6368;
+      margin-top: 4px;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .form-row .form-group {
+      flex: 1;
+    }
+    
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: #1a73e8;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #1557b0;
+    }
+    
+    .btn-secondary {
+      background: white;
+      color: #5f6368;
+      border: 1px solid #dadce0;
+    }
+    
+    .btn-secondary:hover {
+      background: #f8f9fa;
+    }
+    
+    .btn-test {
+      background: #34a853;
+      color: white;
+    }
+    
+    .btn-test:hover {
+      background: #2d8f47;
+    }
+    
+    .btn:disabled {
+      background: #dadce0;
+      color: #5f6368;
+      cursor: not-allowed;
+    }
+    
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #e8eaed;
+    }
+    
+    .status {
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-top: 8px;
+      display: none;
+    }
+    
+    .status.success {
+      background: #e6f4ea;
+      color: #137333;
+      display: block;
+    }
+    
+    .status.error {
+      background: #fce8e6;
+      color: #d93025;
+      display: block;
+    }
+    
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+    
+    .api-key-input {
+      position: relative;
+    }
+    
+    .api-key-toggle {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #5f6368;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    .warning {
+      background: #fef7e0;
+      color: #ea8600;
+      padding: 12px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>⚙️ Agent Y Settings</h1>
+  </div>
+
+  <div class="section">
+    <div class="section-title">🔑 API Configuration</div>
+    
+    <div class="warning">
+      <strong>Important:</strong> Your API key is stored securely and only used for AI requests. Never share your API key with others.
+    </div>
+    
+    <div class="form-group">
+      <label for="apiKey">OpenAI API Key *</label>
+      <div class="api-key-input">
+        <input type="password" id="apiKey" placeholder="sk-..." required>
+        <button type="button" class="api-key-toggle" onclick="toggleApiKeyVisibility()">Show</button>
+      </div>
+      <div class="help-text">
+        Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label for="model">AI Model</label>
+      <select id="model">
+        <option value="gpt-3.5-turbo" selected>GPT-3.5 Turbo (Recommended)</option>
+        <option value="gpt-3.5-turbo-16k">GPT-3.5 Turbo 16K</option>
+        <option value="gpt-4">GPT-4 (Premium)</option>
+        <option value="gpt-4-turbo-preview">GPT-4 Turbo (Premium)</option>
+      </select>
+      <div class="help-text">GPT-3.5 Turbo is faster and more affordable. GPT-4 requires higher tier access.</div>
+    </div>
+    
+    <button class="btn btn-test" onclick="testConnection()" id="testBtn">
+      🔍 Test Connection
+    </button>
+    <div class="status" id="connectionStatus"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">⚡ Performance Settings</div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label for="maxTokens">Max Tokens</label>
+        <input type="number" id="maxTokens" value="4000" min="100" max="8000">
+        <div class="help-text">Maximum length of AI responses</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="temperature">Creativity (Temperature)</label>
+        <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7">
+        <div class="help-text">0 = Focused, 1 = Creative</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">💾 Data & Privacy</div>
+    
+    <div class="checkbox-group">
+      <input type="checkbox" id="saveHistory" checked>
+      <label for="saveHistory">Save conversation history</label>
+    </div>
+    <div class="help-text">Helps provide better context for follow-up requests</div>
+    
+    <div class="checkbox-group" style="margin-top: 12px;">
+      <input type="checkbox" id="analytics" checked>
+      <label for="analytics">Allow usage analytics</label>
+    </div>
+    <div class="help-text">Helps improve the extension (no personal data shared)</div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-secondary" onclick="resetSettings()">Reset to Defaults</button>
+    <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
+    <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+  </div>
+
+  <div class="status" id="saveStatus"></div>
+
+  <script>
+    let currentSettings = {};
+    
+    // Load settings when page opens
+    document.addEventListener('DOMContentLoaded', function() {
+      loadSettings();
+    });
+    
+    /**
+     * Load current settings
+     */
+    function loadSettings() {
+      google.script.run
+        .withSuccessHandler(populateForm)
+        .withFailureHandler(handleError)
+        .getUserSettings();
+    }
+    
+    /**
+     * Populate form with current settings
+     */
+    function populateForm(settings) {
+      currentSettings = settings;
+      
+      document.getElementById('apiKey').value = settings.apiKey || '';
+      document.getElementById('model').value = settings.model || 'gpt-3.5-turbo';
+      document.getElementById('maxTokens').value = settings.maxTokens || 4000;
+      document.getElementById('temperature').value = settings.temperature || 0.7;
+      document.getElementById('saveHistory').checked = settings.saveHistory !== false;
+      document.getElementById('analytics').checked = settings.analytics !== false;
+    }
+    
+    /**
+     * Save settings
+     */
+    function saveSettings() {
+      const settings = {
+        apiKey: document.getElementById('apiKey').value.trim(),
+        model: document.getElementById('model').value,
+        maxTokens: parseInt(document.getElementById('maxTokens').value),
+        temperature: parseFloat(document.getElementById('temperature').value),
+        saveHistory: document.getElementById('saveHistory').checked,
+        analytics: document.getElementById('analytics').checked
+      };
+
+      console.log('Saving settings:', settings);
+
+      // Validate required fields
+      if (!settings.apiKey) {
+        showStatus('error', 'API key is required');
+        return;
+      }
+
+      if (!settings.apiKey.startsWith('sk-')) {
+        showStatus('error', 'Invalid API key format. OpenAI keys start with "sk-"');
+        return;
+      }
+
+      showStatus('success', 'Saving settings...');
+
+      google.script.run
+        .withSuccessHandler((result) => {
+          console.log('Save result:', result);
+          if (result.success) {
+            showStatus('success', result.message || 'Settings saved successfully!');
+            currentSettings = settings;
+          } else {
+            showStatus('error', result.error || 'Failed to save settings');
+          }
+        })
+        .withFailureHandler((error) => {
+          console.error('Save error:', error);
+          showStatus('error', 'Error saving settings: ' + error.message);
+        })
+        .saveUserSettings(settings);
+    }
+
+    /**
+     * Test API connection
+     */
+    function testConnection() {
+      const apiKey = document.getElementById('apiKey').value.trim();
+
+      if (!apiKey) {
+        showConnectionStatus('error', 'Please enter an API key first');
+        return;
+      }
+
+      if (!apiKey.startsWith('sk-')) {
+        showConnectionStatus('error', 'Invalid API key format');
+        return;
+      }
+
+      document.getElementById('testBtn').disabled = true;
+      document.getElementById('testBtn').textContent = '🔄 Testing...';
+
+      google.script.run
+        .withSuccessHandler((result) => {
+          document.getElementById('testBtn').disabled = false;
+          document.getElementById('testBtn').textContent = '🔍 Test Connection';
+
+          if (result.success) {
+            showConnectionStatus('success', result.message || 'Connection successful!');
+          } else {
+            showConnectionStatus('error', result.error || 'Connection failed');
+          }
+        })
+        .withFailureHandler((error) => {
+          document.getElementById('testBtn').disabled = false;
+          document.getElementById('testBtn').textContent = '🔍 Test Connection';
+          showConnectionStatus('error', error.message || 'Connection test failed');
+        })
+        .testAPIConnection();
+    }
+
+    /**
+     * Reset settings to defaults
+     */
+    function resetSettings() {
+      if (confirm('Are you sure you want to reset all settings to defaults?')) {
+        document.getElementById('apiKey').value = '';
+        document.getElementById('model').value = 'gpt-3.5-turbo';
+        document.getElementById('maxTokens').value = 4000;
+        document.getElementById('temperature').value = 0.7;
+        document.getElementById('saveHistory').checked = true;
+        document.getElementById('analytics').checked = true;
+
+        showStatus('success', 'Settings reset to defaults');
+      }
+    }
+
+    /**
+     * Close settings dialog
+     */
+    function closeSettings() {
+      google.script.host.close();
+    }
+
+    /**
+     * Toggle API key visibility
+     */
+    function toggleApiKeyVisibility() {
+      const input = document.getElementById('apiKey');
+      const button = document.querySelector('.api-key-toggle');
+
+      if (input.type === 'password') {
+        input.type = 'text';
+        button.textContent = 'Hide';
+      } else {
+        input.type = 'password';
+        button.textContent = 'Show';
+      }
+    }
+
+    /**
+     * Show status message
+     */
+    function showStatus(type, message) {
+      const statusEl = document.getElementById('saveStatus');
+      statusEl.className = `status ${type}`;
+      statusEl.textContent = message;
+
+      if (type === 'success') {
+        setTimeout(() => {
+          statusEl.classList.remove('success');
+        }, 3000);
+      }
+    }
+
+    /**
+     * Show connection status
+     */
+    function showConnectionStatus(type, message) {
+      const statusEl = document.getElementById('connectionStatus');
+      statusEl.className = `status ${type}`;
+      statusEl.textContent = message;
+
+      if (type === 'success') {
+        setTimeout(() => {
+          statusEl.classList.remove('success');
+        }, 3000);
+      }
+    }
+
+    /**
+     * Handle errors
+     */
+    function handleError(error) {
+      showStatus('error', error.message || 'An error occurred');
+    }
+  </script>
+</body>
+</html>

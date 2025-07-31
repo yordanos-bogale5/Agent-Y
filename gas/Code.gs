@@ -16,21 +16,27 @@ const CONFIG = {
  * Called when the add-on is installed or document is opened
  */
 function onInstall(e) {
-  onOpen(e);
+  // Don't call onOpen during installation
+  // The menu will be created when a document is opened
 }
 
 /**
  * Called when document is opened
  */
 function onOpen(e) {
-  // Create menu items for the add-on
-  DocumentApp.getUi()
-    .createAddonMenu()
-    .addItem('Open Agent Y', 'showSidebar')
-    .addItem('Settings', 'showSettings')
-    .addSeparator()
-    .addItem('Help', 'showHelp')
-    .addToUi();
+  try {
+    // Create menu items for the add-on
+    DocumentApp.getUi()
+      .createAddonMenu()
+      .addItem('Open Agent Y', 'showSidebar')
+      .addItem('Settings', 'showSettings')
+      .addSeparator()
+      .addItem('Help', 'showHelp')
+      .addToUi();
+  } catch (error) {
+    // Ignore errors during installation
+    console.log('Menu creation skipped during installation');
+  }
 }
 
 /**
