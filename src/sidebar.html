@@ -220,10 +220,33 @@
       transition: all 0.2s ease;
     }
 
-    .action-btn:hover {
+    .action-btn:hover:not(:disabled) {
       background-color: var(--bg-secondary);
       border-color: var(--accent-color);
       color: var(--accent-color);
+    }
+
+    .action-btn.insert-btn {
+      border-color: var(--accent-color);
+      color: var(--accent-color);
+      font-weight: 500;
+    }
+
+    .action-btn.insert-btn:hover:not(:disabled) {
+      background-color: var(--accent-color);
+      color: white;
+    }
+
+    .action-btn.context-btn {
+      border-color: #10b981;
+      color: #10b981;
+      cursor: default;
+      opacity: 0.7;
+    }
+
+    .action-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .typing-indicator {
@@ -425,6 +448,17 @@
       50% { opacity: 0.5; }
     }
 
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-10px); }
+    }
+
+    @keyframes buttonSuccess {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
     /* Scrollbar styling */
     .chat-messages::-webkit-scrollbar {
       width: 6px;
@@ -460,19 +494,19 @@
       <div class="welcome-message" id="welcomeMessage">
         <div class="welcome-icon">⚡</div>
         <div class="welcome-title">Welcome to Agent Y</div>
-        <div class="welcome-subtitle">Your AI assistant for Google Docs. What would you like me to help you with?</div>
+        <div class="welcome-subtitle">Your advanced AI assistant. Ask me anything or give me any task!</div>
         <div class="example-prompts">
           <div class="example-prompt" onclick="useExamplePrompt(this)">
-            Create a table with 3 columns and 5 rows
+            What's the main point of this document?
           </div>
           <div class="example-prompt" onclick="useExamplePrompt(this)">
-            Summarize the selected text
+            Create a professional email template
           </div>
           <div class="example-prompt" onclick="useExamplePrompt(this)">
-            Make this text more professional
+            How can I improve this writing?
           </div>
           <div class="example-prompt" onclick="useExamplePrompt(this)">
-            Add bullet points to organize this content
+            Explain this concept in simple terms
           </div>
         </div>
       </div>
@@ -485,7 +519,7 @@
         <textarea
           id="promptInput"
           class="prompt-input"
-          placeholder="Tell me what you want me to do..."
+          placeholder="Ask me anything or give me any task..."
           rows="1"
         ></textarea>
         <button class="send-btn" onclick="sendMessage()" id="sendBtn" title="Send message">
@@ -594,7 +628,7 @@
         .processAIRequest(message);
     }
 
-    function addMessage(type, content, actions = null) {
+    function addMessage(type, content, metadata = null) {
       const chatMessages = document.getElementById('chatMessages');
       const messageDiv = document.createElement('div');
       messageDiv.className = `message ${type}`;
@@ -612,22 +646,37 @@
 
       messageContent.appendChild(bubble);
 
-      if (actions && type === 'ai') {
+      // Add smart action buttons for AI responses
+      if (type === 'ai' && metadata) {
         const actionsDiv = document.createElement('div');
         actionsDiv.className = 'message-actions';
 
-        const insertBtn = document.createElement('button');
-        insertBtn.className = 'action-btn';
-        insertBtn.textContent = '📄 Insert';
-        insertBtn.onclick = () => insertIntoDocument(content);
-
+        // Always show copy button
         const copyBtn = document.createElement('button');
         copyBtn.className = 'action-btn';
         copyBtn.textContent = '📋 Copy';
         copyBtn.onclick = () => copyToClipboard(content);
-
-        actionsDiv.appendChild(insertBtn);
         actionsDiv.appendChild(copyBtn);
+
+        // Show insert button only for content that can be inserted
+        if (metadata.canInsert !== false) {
+          const insertBtn = document.createElement('button');
+          insertBtn.className = 'action-btn insert-btn';
+          insertBtn.textContent = metadata.queryType === 'text_editing' ? '✏️ Replace' : '📄 Insert';
+          insertBtn.onclick = () => insertIntoDocument(content, metadata);
+          actionsDiv.appendChild(insertBtn);
+        }
+
+        // Add context indicator
+        if (metadata.hasContext) {
+          const contextBtn = document.createElement('button');
+          contextBtn.className = 'action-btn context-btn';
+          contextBtn.textContent = '🎯 Context-aware';
+          contextBtn.disabled = true;
+          contextBtn.title = 'This response was generated using your document context';
+          actionsDiv.appendChild(contextBtn);
+        }
+
         messageContent.appendChild(actionsDiv);
       }
 
@@ -638,7 +687,7 @@
       chatMessages.scrollTop = chatMessages.scrollHeight;
 
       // Store in conversation history
-      conversationHistory.push({ type, content, timestamp: Date.now() });
+      conversationHistory.push({ type, content, metadata, timestamp: Date.now() });
     }
 
     function showTypingIndicator() {
@@ -686,7 +735,7 @@
     }
 
     /**
-     * Handle successful AI response
+     * Handle successful AI response (dynamic Q&A style)
      */
     function handleAIResponse(result) {
       hideTypingIndicator();
@@ -695,10 +744,56 @@
 
       if (result.success) {
         const responseText = result.result.text || result.result;
-        addMessage('ai', responseText, true);
+        const metadata = {
+          queryType: result.result.queryType || 'general',
+          canInsert: result.result.canInsert !== false,
+          hasContext: result.result.hasContext || false
+        };
+
+        addMessage('ai', responseText, metadata);
         hideError();
+
+        // Show helpful hint for first-time users
+        if (conversationHistory.length <= 2) {
+          showInsertionHint(metadata);
+        }
       } else {
         showError(result.error || 'Unknown error occurred');
+      }
+    }
+
+    /**
+     * Show helpful hint about insertion control
+     */
+    function showInsertionHint(metadata) {
+      if (metadata.canInsert) {
+        setTimeout(() => {
+          const hintDiv = document.createElement('div');
+          hintDiv.style.cssText = `
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 8px 20px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            animation: fadeIn 0.3s ease;
+          `;
+          hintDiv.textContent = '💡 Click "Insert" to add this to your document at cursor position';
+
+          const chatMessages = document.getElementById('chatMessages');
+          chatMessages.appendChild(hintDiv);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+
+          // Auto-remove hint after 5 seconds
+          setTimeout(() => {
+            if (hintDiv.parentNode) {
+              hintDiv.style.animation = 'fadeOut 0.3s ease';
+              setTimeout(() => hintDiv.remove(), 300);
+            }
+          }, 5000);
+        }, 1000);
       }
     }
 
@@ -734,17 +829,42 @@
     }
 
     /**
-     * Insert text into document
+     * Insert text into document with controlled insertion (Augment/Cursor style)
      */
-    function insertIntoDocument(text) {
+    function insertIntoDocument(text, metadata = {}) {
+      // Show immediate feedback
+      const insertBtn = event.target;
+      const originalText = insertBtn.textContent;
+      insertBtn.textContent = '⏳ Inserting...';
+      insertBtn.disabled = true;
+
       google.script.run
-        .withSuccessHandler(() => {
-          showSuccess('✓ Inserted into document');
+        .withSuccessHandler((result) => {
+          if (result.success) {
+            showSuccess(`✓ ${result.message || 'Inserted successfully'}`);
+            insertBtn.textContent = '✓ Inserted';
+            insertBtn.style.background = 'var(--accent-color)';
+            insertBtn.style.color = 'white';
+
+            // Reset button after delay
+            setTimeout(() => {
+              insertBtn.textContent = originalText;
+              insertBtn.disabled = false;
+              insertBtn.style.background = '';
+              insertBtn.style.color = '';
+            }, 2000);
+          } else {
+            showError(result.error || 'Failed to insert text');
+            insertBtn.textContent = originalText;
+            insertBtn.disabled = false;
+          }
         })
         .withFailureHandler((error) => {
-          showError('Failed to insert: ' + error.message);
+          showError('Insertion failed: ' + error.message);
+          insertBtn.textContent = originalText;
+          insertBtn.disabled = false;
         })
-        .insertTextAtCursor(text);
+        .insertTextAtCursor(text, metadata);
     }
 
     /**

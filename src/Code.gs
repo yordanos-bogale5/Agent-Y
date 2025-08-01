@@ -125,57 +125,176 @@ function getCurrentSelection() {
 }
 
 /**
- * Insert text at cursor position
+ * Insert text at precise cursor position (Augment/Cursor-style controlled insertion)
  */
-function insertTextAtCursor(text) {
+function insertTextAtCursor(text, options = {}) {
   try {
     const doc = DocumentApp.getActiveDocument();
     const cursor = doc.getCursor();
     const selection = doc.getSelection();
-    
-    if (selection) {
-      // Replace selected text
-      const elements = selection.getSelectedElements();
-      if (elements.length > 0) {
-        const element = elements[0];
-        if (element.getElement().editAsText) {
-          const textElement = element.getElement().editAsText();
-          
-          if (element.isPartial()) {
-            textElement.deleteText(element.getStartOffset(), element.getEndOffsetInclusive());
-            textElement.insertText(element.getStartOffset(), text);
-          } else {
-            textElement.setText(text);
-          }
-        }
-      }
-    } else if (cursor) {
-      // Insert at cursor position
-      const element = cursor.getElement();
-      const offset = cursor.getOffset();
-      
-      if (element.editAsText) {
-        element.editAsText().insertText(offset, text);
-      } else {
-        // If cursor is not in a text element, insert a new paragraph
-        const body = doc.getBody();
-        const paragraph = body.insertParagraph(body.getNumChildren(), text);
-      }
-    } else {
-      // No cursor or selection, append to end of document
-      const body = doc.getBody();
-      body.appendParagraph(text);
+
+    // Validate that we have a valid insertion point
+    if (!cursor && !selection) {
+      return {
+        success: false,
+        error: 'No cursor position found. Please click in the document where you want to insert the text.'
+      };
     }
-    
-    return { success: true };
+
+    let insertionResult = null;
+
+    if (selection) {
+      // Replace selected text with AI response
+      insertionResult = replaceSelectedText(selection, text);
+    } else if (cursor) {
+      // Insert at exact cursor position
+      insertionResult = insertAtCursorPosition(cursor, text);
+    }
+
+    if (insertionResult && insertionResult.success) {
+      // Move cursor to end of inserted text
+      positionCursorAfterInsertion(doc, insertionResult.insertedLength || text.length);
+
+      return {
+        success: true,
+        message: `Inserted ${text.length} characters at cursor position`,
+        insertedLength: text.length
+      };
+    } else {
+      throw new Error(insertionResult?.error || 'Unknown insertion error');
+    }
+
   } catch (error) {
     console.error('Error inserting text:', error);
-    throw new Error('Failed to insert text into document');
+    return {
+      success: false,
+      error: `Failed to insert text: ${error.message}`
+    };
   }
 }
 
 /**
- * Process AI instruction from the sidebar
+ * Replace selected text with new content
+ */
+function replaceSelectedText(selection, text) {
+  try {
+    const elements = selection.getSelectedElements();
+    if (elements.length === 0) {
+      return { success: false, error: 'No selected elements found' };
+    }
+
+    // Handle single element selection
+    if (elements.length === 1) {
+      const element = elements[0];
+      if (element.getElement().editAsText) {
+        const textElement = element.getElement().editAsText();
+
+        if (element.isPartial()) {
+          // Replace partial selection
+          const startOffset = element.getStartOffset();
+          const endOffset = element.getEndOffsetInclusive();
+          textElement.deleteText(startOffset, endOffset);
+          textElement.insertText(startOffset, text);
+        } else {
+          // Replace entire element
+          textElement.setText(text);
+        }
+
+        return { success: true, insertedLength: text.length };
+      }
+    }
+
+    // Handle multi-element selection (more complex)
+    return replaceMultiElementSelection(elements, text);
+
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Insert text at exact cursor position
+ */
+function insertAtCursorPosition(cursor, text) {
+  try {
+    const element = cursor.getElement();
+    const offset = cursor.getOffset();
+
+    if (element.editAsText) {
+      // Insert in text element
+      element.editAsText().insertText(offset, text);
+      return { success: true, insertedLength: text.length };
+    } else {
+      // Cursor is in non-text element, insert new paragraph
+      const body = DocumentApp.getActiveDocument().getBody();
+      const newParagraph = body.insertParagraph(body.getNumChildren(), text);
+      return { success: true, insertedLength: text.length };
+    }
+
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Handle multi-element selection replacement
+ */
+function replaceMultiElementSelection(elements, text) {
+  try {
+    // For now, replace content in the first editable element
+    for (let i = 0; i < elements.length; i++) {
+      const element = elements[i];
+      if (element.getElement().editAsText) {
+        const textElement = element.getElement().editAsText();
+
+        if (element.isPartial()) {
+          const startOffset = element.getStartOffset();
+          const endOffset = element.getEndOffsetInclusive();
+          textElement.deleteText(startOffset, endOffset);
+          textElement.insertText(startOffset, text);
+        } else {
+          textElement.setText(text);
+        }
+
+        return { success: true, insertedLength: text.length };
+      }
+    }
+
+    return { success: false, error: 'No editable text elements in selection' };
+
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Position cursor after inserted text
+ */
+function positionCursorAfterInsertion(doc, insertedLength) {
+  try {
+    // This is a best-effort attempt to position cursor
+    // Google Apps Script has limitations with cursor positioning
+    const body = doc.getBody();
+    const text = body.getText();
+
+    // Try to set cursor position (may not always work due to API limitations)
+    const range = doc.newRange();
+    const elements = body.getParagraphs();
+
+    if (elements.length > 0) {
+      const lastElement = elements[elements.length - 1];
+      range.addElement(lastElement);
+      doc.setSelection(range.build());
+    }
+
+  } catch (error) {
+    console.log('Could not position cursor after insertion:', error.message);
+    // This is not critical, so we don't throw
+  }
+}
+
+/**
+ * Process dynamic AI query from the sidebar (like Augment/Cursor)
  */
 async function processAIRequest(userInput, options = {}) {
   try {
@@ -183,7 +302,7 @@ async function processAIRequest(userInput, options = {}) {
     if (!userInput || userInput.trim().length === 0) {
       return {
         success: false,
-        error: 'Please provide an instruction.'
+        error: 'Please ask me anything or give me an instruction.'
       };
     }
 
@@ -195,12 +314,12 @@ async function processAIRequest(userInput, options = {}) {
       temperature: 0.7
     };
 
-    // Process the instruction directly
-    const result = await processDirectInstruction(userInput, settings, options);
+    // Process as dynamic Q&A with context awareness
+    const result = await processDynamicQuery(userInput, settings, options);
     return result;
 
   } catch (error) {
-    console.error('Error processing AI instruction:', error);
+    console.error('Error processing AI query:', error);
     return {
       success: false,
       error: `Request failed: ${error.message}`
@@ -209,55 +328,122 @@ async function processAIRequest(userInput, options = {}) {
 }
 
 /**
- * Process direct instruction from user
+ * Process dynamic query with context awareness (like Augment/Cursor)
  */
-async function processDirectInstruction(userInput, settings, options = {}) {
+async function processDynamicQuery(userInput, settings, options = {}) {
   try {
     // Get document context
     const selection = getCurrentSelection();
     const documentContent = getDocumentContent();
-    
+    const cursorInfo = getCursorInfo();
+
     // Create Gemini client
     const apiClient = new GeminiClient(settings);
-    
-    // Build instruction prompt
-    let prompt = `You are an AI assistant helping with Google Docs. The user wants you to: ${userInput}\n\n`;
-    
-    // Add context if available
+
+    // Build dynamic context-aware prompt
+    let prompt = `You are an advanced AI assistant integrated into Google Docs, similar to Cursor or Augment. You can help with any question, task, or request related to writing, editing, analysis, or general knowledge.
+
+User Query: "${userInput}"
+
+CONTEXT INFORMATION:
+`;
+
+    // Add document context if available
     if (selection && selection.trim().length > 0) {
-      prompt += `Selected text: "${selection}"\n\n`;
+      prompt += `- Selected text: "${selection}"\n`;
     }
-    
+
     if (documentContent && documentContent.trim().length > 0) {
-      prompt += `Current document content: "${documentContent.substring(0, 1000)}${documentContent.length > 1000 ? '...' : ''}"\n\n`;
+      const preview = documentContent.substring(0, 1500);
+      prompt += `- Document content preview: "${preview}${documentContent.length > 1500 ? '...' : ''}"\n`;
     }
-    
-    prompt += `Please provide the exact content that should be inserted into the document to fulfill this request. Only return the content to be inserted, no explanations.`;
+
+    prompt += `- Cursor position: ${cursorInfo.hasCursor ? 'Active' : 'None'}\n`;
+    prompt += `- Document length: ${cursorInfo.documentLength} characters\n\n`;
+
+    // Determine response type based on query
+    const queryType = analyzeQueryType(userInput);
+
+    switch (queryType) {
+      case 'content_creation':
+        prompt += `INSTRUCTION: The user wants content created. Provide the exact text that should be inserted into their document. Be helpful and create exactly what they asked for.`;
+        break;
+      case 'question_answer':
+        prompt += `INSTRUCTION: The user has a question. Provide a helpful, informative answer. If they're asking about their document content, analyze it and respond accordingly.`;
+        break;
+      case 'text_editing':
+        prompt += `INSTRUCTION: The user wants text edited or improved. If they have text selected, work with that. Otherwise, provide guidance or ask for clarification.`;
+        break;
+      case 'analysis':
+        prompt += `INSTRUCTION: The user wants analysis or explanation. Analyze their document content or selected text and provide insights.`;
+        break;
+      default:
+        prompt += `INSTRUCTION: Respond helpfully to the user's request. If they want content created, provide it. If they have a question, answer it. Be conversational and helpful.`;
+    }
 
     // Get AI response
     const response = await apiClient.generateResponse(prompt, settings);
-    
+
     return {
       success: true,
       result: {
         text: response.trim(),
-        instruction: userInput
+        query: userInput,
+        queryType: queryType,
+        canInsert: queryType === 'content_creation' || (queryType === 'text_editing' && selection),
+        hasContext: !!(selection || documentContent)
       },
       metadata: {
-        instruction: userInput,
+        query: userInput,
+        queryType: queryType,
         hasSelection: !!selection,
+        hasDocument: !!documentContent,
         responseLength: response.length,
         timestamp: new Date().toISOString()
       }
     };
 
   } catch (error) {
-    console.error('Error processing instruction:', error);
+    console.error('Error processing dynamic query:', error);
     return {
       success: false,
-      error: `Instruction failed: ${error.message}`
+      error: `Query failed: ${error.message}`
     };
   }
+}
+
+/**
+ * Analyze query type to determine appropriate response strategy
+ */
+function analyzeQueryType(query) {
+  const lowerQuery = query.toLowerCase();
+
+  // Content creation patterns
+  if (lowerQuery.match(/\b(create|write|generate|make|add|insert|build)\b/) ||
+      lowerQuery.match(/\b(table|list|paragraph|section|heading|bullet)\b/)) {
+    return 'content_creation';
+  }
+
+  // Text editing patterns
+  if (lowerQuery.match(/\b(edit|improve|fix|rewrite|change|modify|update)\b/) ||
+      lowerQuery.match(/\b(grammar|spelling|tone|style|format)\b/)) {
+    return 'text_editing';
+  }
+
+  // Analysis patterns
+  if (lowerQuery.match(/\b(analyze|explain|summarize|review|check)\b/) ||
+      lowerQuery.match(/\b(what|why|how|tell me about)\b/)) {
+    return 'analysis';
+  }
+
+  // Question patterns
+  if (lowerQuery.match(/\b(what|who|when|where|why|how|can you|could you)\b/) ||
+      lowerQuery.includes('?')) {
+    return 'question_answer';
+  }
+
+  // Default to content creation for ambiguous requests
+  return 'content_creation';
 }
 
 /**
