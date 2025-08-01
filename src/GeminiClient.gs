@@ -1,14 +1,14 @@
 /**
- * OpenAIClient - Integration with OpenAI GPT-4 API
+ * GeminiClient - Integration with Google Gemini API
  * Handles API communication, error handling, and response processing
  */
 
-class OpenAIClient {
+class GeminiClient {
   constructor(config = {}) {
     this.config = {
       apiKey: config.apiKey || '',
-      model: config.model || 'gpt-4',
-      baseURL: config.baseURL || 'https://api.openai.com/v1',
+      model: config.model || 'gemini-1.5-flash',
+      baseURL: 'https://generativelanguage.googleapis.com/v1beta',
       maxTokens: config.maxTokens || 4000,
       temperature: config.temperature || 0.7,
       timeout: config.timeout || 30000,
@@ -23,11 +23,7 @@ class OpenAIClient {
    */
   validateConfig() {
     if (!this.config.apiKey) {
-      throw new Error('OpenAI API key is required');
-    }
-    
-    if (!this.config.apiKey.startsWith('sk-')) {
-      throw new Error('Invalid OpenAI API key format');
+      throw new Error('Gemini API key is required');
     }
   }
 
@@ -44,83 +40,54 @@ class OpenAIClient {
         ...options
       };
       
-      const response = await this.makeAPIRequest('/chat/completions', {
-        model: requestConfig.model,
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: requestConfig.maxTokens,
-        temperature: requestConfig.temperature,
-        top_p: requestConfig.topP || 1,
-        frequency_penalty: requestConfig.frequencyPenalty || 0,
-        presence_penalty: requestConfig.presencePenalty || 0
+      const response = await this.makeAPIRequest('/models/gemini-1.5-flash:generateContent', {
+        contents: [{
+          parts: [{
+            text: prompt
+          }]
+        }],
+        generationConfig: {
+          temperature: requestConfig.temperature,
+          maxOutputTokens: requestConfig.maxTokens
+        }
       });
       
       return this.extractResponseText(response);
       
     } catch (error) {
       console.error('Error generating response:', error);
-      throw new Error(`OpenAI API error: ${error.message}`);
+      throw new Error(`Gemini API error: ${error.message}`);
     }
   }
 
   /**
-   * Generate response with conversation history
-   * @param {Array} messages - Conversation messages
-   * @param {Object} options - Generation options
-   * @returns {Promise<string>} Generated response
-   */
-  async generateResponseWithHistory(messages, options = {}) {
-    try {
-      const requestConfig = {
-        ...this.config,
-        ...options
-      };
-      
-      const response = await this.makeAPIRequest('/chat/completions', {
-        model: requestConfig.model,
-        messages: messages,
-        max_tokens: requestConfig.maxTokens,
-        temperature: requestConfig.temperature,
-        top_p: requestConfig.topP || 1,
-        frequency_penalty: requestConfig.frequencyPenalty || 0,
-        presence_penalty: requestConfig.presencePenalty || 0
-      });
-      
-      return this.extractResponseText(response);
-      
-    } catch (error) {
-      console.error('Error generating response with history:', error);
-      throw new Error(`OpenAI API error: ${error.message}`);
-    }
-  }
-
-  /**
-   * Make HTTP request to OpenAI API
+   * Make HTTP request to Gemini API
    * @param {string} endpoint - API endpoint
    * @param {Object} data - Request data
    * @returns {Promise<Object>} API response
    */
   async makeAPIRequest(endpoint, data) {
-    const url = `${this.config.baseURL}${endpoint}`;
+    const url = `${this.config.baseURL}${endpoint}?key=${this.config.apiKey}`;
     
     const options = {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${this.config.apiKey}`,
         'Content-Type': 'application/json'
       },
       payload: JSON.stringify(data)
     };
 
     try {
+      console.log('Making API request to:', url);
+      console.log('Request payload:', JSON.stringify(data, null, 2));
+      
       // Use Google Apps Script UrlFetchApp
       const response = UrlFetchApp.fetch(url, options);
       const responseCode = response.getResponseCode();
       const responseText = response.getContentText();
+      
+      console.log('Response code:', responseCode);
+      console.log('Response text:', responseText);
       
       if (responseCode !== 200) {
         throw new Error(`HTTP ${responseCode}: ${responseText}`);
@@ -130,31 +97,29 @@ class OpenAIClient {
       
     } catch (error) {
       console.error('API request failed:', error);
+      console.error('URL:', url);
+      console.error('Options:', options);
       throw new Error(`API request failed: ${error.message}`);
     }
   }
 
   /**
-   * Extract text from OpenAI response
+   * Extract text from Gemini response
    * @param {Object} response - API response
    * @returns {string} Response text
    */
   extractResponseText(response) {
-    if (!response.choices || response.choices.length === 0) {
-      throw new Error('No response choices received from OpenAI');
+    if (!response.candidates || response.candidates.length === 0) {
+      throw new Error('No response candidates received from Gemini');
     }
     
-    const choice = response.choices[0];
+    const candidate = response.candidates[0];
     
-    if (choice.message && choice.message.content) {
-      return choice.message.content.trim();
+    if (candidate.content && candidate.content.parts && candidate.content.parts.length > 0) {
+      return candidate.content.parts[0].text.trim();
     }
     
-    if (choice.text) {
-      return choice.text.trim();
-    }
-    
-    throw new Error('Unable to extract text from OpenAI response');
+    throw new Error('Unable to extract text from Gemini response');
   }
 
   /**
@@ -178,8 +143,8 @@ class OpenAIClient {
     const estimatedInputTokens = this.estimateTokenCount(prompt);
     const totalEstimated = estimatedInputTokens + maxTokens;
     
-    // GPT-4 has different context limits
-    const contextLimit = this.config.model.includes('gpt-4') ? 8192 : 4096;
+    // Gemini Pro has a 30K token context limit
+    const contextLimit = 30000;
     
     return totalEstimated <= contextLimit;
   }
@@ -193,7 +158,7 @@ class OpenAIClient {
   truncatePrompt(prompt, options = {}) {
     const maxTokens = options.maxTokens || this.config.maxTokens;
     const reservedTokens = options.reservedTokens || 500; // Reserve for response
-    const contextLimit = this.config.model.includes('gpt-4') ? 8192 : 4096;
+    const contextLimit = 30000; // Gemini Pro limit
     
     const maxInputTokens = contextLimit - maxTokens - reservedTokens;
     const maxInputChars = maxInputTokens * 4; // Rough estimation
@@ -211,10 +176,9 @@ class OpenAIClient {
    */
   getAvailableModels() {
     return [
-      'gpt-4',
-      'gpt-4-turbo-preview',
-      'gpt-3.5-turbo',
-      'gpt-3.5-turbo-16k'
+      'gemini-1.5-flash',
+      'gemini-1.5-pro',
+      'gemini-pro'
     ];
   }
 
@@ -257,8 +221,32 @@ class OpenAIClient {
    */
   async testConnection() {
     try {
-      const response = await this.generateResponse('Hello', { maxTokens: 10 });
-      return !!response;
+      // Simple test request
+      const url = `${this.config.baseURL}/models/gemini-1.5-flash:generateContent?key=${this.config.apiKey}`;
+      
+      const testData = {
+        contents: [{
+          parts: [{
+            text: "Hello"
+          }]
+        }]
+      };
+      
+      const options = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        payload: JSON.stringify(testData)
+      };
+      
+      const response = UrlFetchApp.fetch(url, options);
+      const responseCode = response.getResponseCode();
+      
+      console.log('Test connection response code:', responseCode);
+      console.log('Test connection response:', response.getContentText());
+      
+      return responseCode === 200;
     } catch (error) {
       console.error('Connection test failed:', error);
       return false;

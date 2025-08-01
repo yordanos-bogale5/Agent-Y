@@ -220,37 +220,30 @@
 
   <div class="section">
     <div class="section-title">🔑 API Configuration</div>
-    
+
     <div class="warning">
-      <strong>Important:</strong> Your API key is stored securely and only used for AI requests. Never share your API key with others.
+      <strong>Simple Setup:</strong> Just paste your FREE Gemini API key below and start using AI assistance immediately!
     </div>
-    
+
     <div class="form-group">
-      <label for="apiKey">OpenAI API Key *</label>
+      <label for="apiKey">Google Gemini API Key *</label>
       <div class="api-key-input">
-        <input type="password" id="apiKey" placeholder="sk-..." required>
+        <input type="password" id="apiKey" placeholder="Enter your Gemini API key..." required>
         <button type="button" class="api-key-toggle" onclick="toggleApiKeyVisibility()">Show</button>
       </div>
       <div class="help-text">
-        Get your API key from <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI Platform</a>
+        Get your FREE API key from <a href="https://makersuite.google.com/app/apikey" target="_blank">Google AI Studio</a>
       </div>
     </div>
-    
+
     <div class="form-group">
       <label for="model">AI Model</label>
       <select id="model">
-        <option value="gpt-3.5-turbo" selected>GPT-3.5 Turbo (Recommended)</option>
-        <option value="gpt-3.5-turbo-16k">GPT-3.5 Turbo 16K</option>
-        <option value="gpt-4">GPT-4 (Premium)</option>
-        <option value="gpt-4-turbo-preview">GPT-4 Turbo (Premium)</option>
+        <option value="gemini-pro" selected>Gemini Pro (FREE & Recommended)</option>
+        <option value="gemini-pro-vision">Gemini Pro Vision (FREE)</option>
       </select>
-      <div class="help-text">GPT-3.5 Turbo is faster and more affordable. GPT-4 requires higher tier access.</div>
+      <div class="help-text">Gemini Pro is completely free and provides excellent AI assistance!</div>
     </div>
-    
-    <button class="btn btn-test" onclick="testConnection()" id="testBtn">
-      🔍 Test Connection
-    </button>
-    <div class="status" id="connectionStatus"></div>
   </div>
 
   <div class="section">
@@ -320,7 +313,7 @@
       currentSettings = settings;
       
       document.getElementById('apiKey').value = settings.apiKey || '';
-      document.getElementById('model').value = settings.model || 'gpt-3.5-turbo';
+      document.getElementById('model').value = settings.model || 'gemini-pro';
       document.getElementById('maxTokens').value = settings.maxTokens || 4000;
       document.getElementById('temperature').value = settings.temperature || 0.7;
       document.getElementById('saveHistory').checked = settings.saveHistory !== false;
@@ -348,8 +341,9 @@
         return;
       }
 
-      if (!settings.apiKey.startsWith('sk-')) {
-        showStatus('error', 'Invalid API key format. OpenAI keys start with "sk-"');
+      // Gemini API keys can start with different prefixes, so just check basic format
+      if (settings.apiKey.length < 20) {
+        showStatus('error', 'API key appears to be too short. Please check your Gemini API key.');
         return;
       }
 
@@ -372,43 +366,7 @@
         .saveUserSettings(settings);
     }
 
-    /**
-     * Test API connection
-     */
-    function testConnection() {
-      const apiKey = document.getElementById('apiKey').value.trim();
 
-      if (!apiKey) {
-        showConnectionStatus('error', 'Please enter an API key first');
-        return;
-      }
-
-      if (!apiKey.startsWith('sk-')) {
-        showConnectionStatus('error', 'Invalid API key format');
-        return;
-      }
-
-      document.getElementById('testBtn').disabled = true;
-      document.getElementById('testBtn').textContent = '🔄 Testing...';
-
-      google.script.run
-        .withSuccessHandler((result) => {
-          document.getElementById('testBtn').disabled = false;
-          document.getElementById('testBtn').textContent = '🔍 Test Connection';
-
-          if (result.success) {
-            showConnectionStatus('success', result.message || 'Connection successful!');
-          } else {
-            showConnectionStatus('error', result.error || 'Connection failed');
-          }
-        })
-        .withFailureHandler((error) => {
-          document.getElementById('testBtn').disabled = false;
-          document.getElementById('testBtn').textContent = '🔍 Test Connection';
-          showConnectionStatus('error', error.message || 'Connection test failed');
-        })
-        .testAPIConnection();
-    }
 
     /**
      * Reset settings to defaults
@@ -416,7 +374,7 @@
     function resetSettings() {
       if (confirm('Are you sure you want to reset all settings to defaults?')) {
         document.getElementById('apiKey').value = '';
-        document.getElementById('model').value = 'gpt-3.5-turbo';
+        document.getElementById('model').value = 'gemini-pro';
         document.getElementById('maxTokens').value = 4000;
         document.getElementById('temperature').value = 0.7;
         document.getElementById('saveHistory').checked = true;
@@ -464,20 +422,7 @@
       }
     }
 
-    /**
-     * Show connection status
-     */
-    function showConnectionStatus(type, message) {
-      const statusEl = document.getElementById('connectionStatus');
-      statusEl.className = `status ${type}`;
-      statusEl.textContent = message;
 
-      if (type === 'success') {
-        setTimeout(() => {
-          statusEl.classList.remove('success');
-        }, 3000);
-      }
-    }
 
     /**
      * Handle errors

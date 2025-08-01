@@ -37,7 +37,6 @@
     }
   },
   "urlFetchWhitelist": [
-    "https://api.openai.com/",
     "https://generativelanguage.googleapis.com/"
   ]
 }
