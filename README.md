@@ -88,18 +88,7 @@
    Open any Google Doc → Extensions → Agent Y
    ```
 
-## 🎯 Usage
-
-### Basic Commands
-```
-"Create a table with 3 columns and 5 rows"
-"Make this text more professional"
-"Summarize the selected content"
-"Add bullet points to organize this"
-"Translate this to Spanish"
-```
-
-### Interface Guide
+## Interface Guide
 - **💬 Chat Interface**: Type instructions naturally
 - **⚡ AI Responses**: Get instant, contextual help
 - **📄 Insert Button**: Add AI output to your document
